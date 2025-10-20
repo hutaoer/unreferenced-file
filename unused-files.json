@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-10-20T12:36:58.648Z",
+  "totalScanned": 9,
+  "unusedCount": 4,
+  "unusedFiles": [
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/helper.ts",
+      "relativePath": "src/utils/helper.ts"
+    },
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/old/legacy.ts",
+      "relativePath": "src/old/legacy.ts"
+    },
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/experimental/newFeature.ts",
+      "relativePath": "src/experimental/newFeature.ts"
+    },
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/components/Modal.ts",
+      "relativePath": "src/components/Modal.ts"
+    }
+  ]
+}

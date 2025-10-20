@@ -9,7 +9,9 @@
     "dev": "ts-node src/index.ts",
     "watch": "tsc --watch",
     "clean": "rm -rf dist",
-    "find:unref": "ts-node scripts/find-unreferenced.ts"
+    "find:unref": "ts-node scripts/find-unreferenced.ts",
+    "find:old": "ts-node scripts/test-find-unreferenced-old.ts",
+    "build:webpack": "webpack --config webpack.config.js"
   },
   "keywords": [
     "typescript",
@@ -19,12 +21,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.22",
+    "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "glob": "^11.0.3",
-    "minimatch": "^10.0.3",
-    "webpack": "^5.102.1"
+    "minimatch": "^10.0.3"
   }
 }

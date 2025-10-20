@@ -2,7 +2,6 @@ import type { Compiler } from "webpack";
 import * as fs from 'fs';
 import * as path from 'path';
 import { sync } from 'glob';
-import { minimatch } from 'minimatch';
 import * as ts from 'typescript';
 
 const log = {
@@ -63,6 +62,16 @@ export interface UnusedFilesPluginOptions {
    * @default tsconfig.json
    */
   tsconfigPath?: string;
+  /**
+   * 将仅类型引用的文件视为未使用
+   * @default false
+   */
+  treatTypeOnlyAsUnused?: boolean;  /**
+   * 严格模式：仅当导入在“值位置”被实际使用时，才将其计为依赖
+   * 并保留纯副作用导入
+   * @default false
+   */
+  strictRuntimeUsage?: boolean;
 };
 
 export default class UnusedFilesPlugin {
@@ -87,6 +96,8 @@ export default class UnusedFilesPlugin {
       verbose: false,
       checkTypeReferences: true,
       tsconfigPath: 'tsconfig.json',
+      treatTypeOnlyAsUnused: false,
+      strictRuntimeUsage: false,
       ...options
     };
 
@@ -354,9 +365,9 @@ export default class UnusedFilesPlugin {
   /**
    * 通过使用上下文判断是否为类型
    */
-  private isTypeByUsage = (element: ts.ImportSpecifier, typeChecker: ts.TypeChecker): boolean => {
+  private isTypeByUsage = (element: ts.ImportSpecifier, _typeChecker: ts.TypeChecker): boolean => {
     try {
-      const type = typeChecker.getTypeAtLocation(element.name);
+      const type = _typeChecker.getTypeAtLocation(element.name);
       if (!type) return false;
         
       // 检查是否是类型相关的标志
@@ -386,7 +397,7 @@ export default class UnusedFilesPlugin {
   /**
    * 判断符号是否为类型
    */
-  private isTypeSymbol = (symbol: ts.Symbol, typeChecker: ts.TypeChecker): boolean => {
+  private isTypeSymbol = (symbol: ts.Symbol, _typeChecker: ts.TypeChecker): boolean => {
     // 检查符号标志
     const flags = symbol.flags;
     
@@ -505,6 +516,128 @@ export default class UnusedFilesPlugin {
     return null;
   }
 
+  /**
+   * 基于 TypeScript AST 构建仅值位置使用的依赖图，并从入口出发求可达文件
+   */
+  public runtimeReachable = (entryFiles: Set<string>): Set<string> => {
+    try {
+      const root = this.options.root || process.cwd();
+      const tsconfigPath = require('path').resolve(root, this.options.tsconfigPath || 'tsconfig.json');
+      const tsmod = ts as typeof import('typescript');
+
+      const configFile = tsmod.readConfigFile(tsconfigPath, tsmod.sys.readFile);
+      const parsed = tsmod.parseJsonConfigFileContent(configFile.config, tsmod.sys, require('path').dirname(tsconfigPath));
+      const program = tsmod.createProgram(parsed.fileNames, parsed.options);
+
+      type Graph = Map<string, Set<string>>;
+      const graph: Graph = new Map();
+
+      function isInTypePosition(node: ts.Node): boolean {
+        let cur: ts.Node | undefined = node;
+        while (cur) {
+          if (
+            tsmod.isTypeNode(cur) ||
+            tsmod.isTypeAliasDeclaration(cur) ||
+            tsmod.isInterfaceDeclaration(cur) ||
+            tsmod.isHeritageClause(cur) ||
+            tsmod.isImportTypeNode(cur) ||
+            tsmod.isTypeQueryNode(cur)
+          ) return true;
+          cur = cur.parent;
+        }
+        return false;
+      }
+
+      for (const sourceFile of program.getSourceFiles()) {
+        const from = sourceFile.fileName;
+        if (from.includes('node_modules')) continue;
+        if (!graph.has(from)) graph.set(from, new Set());
+
+        type ImportBinding = { local: string; isNamespace: boolean; targetFile: string };
+        const importBindings: ImportBinding[] = [];
+        const sideEffectTargets: Set<string> = new Set();
+
+        tsmod.forEachChild(sourceFile, node => {
+          if (!tsmod.isImportDeclaration(node)) return;
+          const spec = node.moduleSpecifier;
+          const ic = node.importClause;
+          if (!tsmod.isStringLiteral(spec)) return;
+          const resolved = tsmod.resolveModuleName(spec.text, from, program.getCompilerOptions(), tsmod.sys);
+          const target = resolved.resolvedModule?.resolvedFileName;
+          if (!target || target.includes('node_modules')) return;
+
+          if (!ic) { // side-effect import
+            sideEffectTargets.add(target);
+            return;
+          }
+          if (ic.isTypeOnly) return; // ignore whole type import
+
+          if (ic.name) importBindings.push({ local: ic.name.text, isNamespace: false, targetFile: target });
+          if (ic.namedBindings) {
+            if (tsmod.isNamespaceImport(ic.namedBindings)) {
+              importBindings.push({ local: ic.namedBindings.name.text, isNamespace: true, targetFile: target });
+            } else if (tsmod.isNamedImports(ic.namedBindings)) {
+              for (const el of ic.namedBindings.elements) {
+                if (el.isTypeOnly) continue;
+                importBindings.push({ local: el.name.text, isNamespace: false, targetFile: target });
+              }
+            }
+          }
+        });
+
+        const usedTargets = new Set<string>(sideEffectTargets);
+        function isInsideImport(node: ts.Node): boolean {
+          let cur: ts.Node | undefined = node;
+          while (cur) {
+            if (
+              tsmod.isImportDeclaration(cur) ||
+              tsmod.isImportClause(cur) ||
+              tsmod.isImportSpecifier(cur) ||
+              tsmod.isNamespaceImport(cur)
+            ) return true;
+            cur = cur.parent;
+          }
+          return false;
+        }
+        function scan(node: ts.Node) {
+          if (tsmod.isIdentifier(node) && !isInTypePosition(node) && !isInsideImport(node)) {
+            const name = (node as ts.Identifier).text;
+            for (const b of importBindings) {
+              if (!b.isNamespace && b.local === name) usedTargets.add(b.targetFile);
+            }
+          }
+          if (
+            tsmod.isPropertyAccessExpression(node) && tsmod.isIdentifier(node.expression) &&
+            !isInTypePosition(node) && !isInsideImport(node)
+          ) {
+            const ns = (node.expression as ts.Identifier).text;
+            for (const b of importBindings) {
+              if (b.isNamespace && b.local === ns) usedTargets.add(b.targetFile);
+            }
+          }
+          tsmod.forEachChild(node, scan);
+        }
+        scan(sourceFile);
+
+        if (!graph.has(from)) graph.set(from, new Set());
+        for (const target of usedTargets) graph.get(from)!.add(target);
+      }
+
+      const visited = new Set<string>();
+      const stack: string[] = Array.from(entryFiles);
+      while (stack.length) {
+        const cur = stack.pop()!;
+        if (visited.has(cur)) continue;
+        visited.add(cur);
+        const deps = graph.get(cur);
+        if (deps) for (const d of deps) stack.push(d);
+      }
+      return visited;
+    } catch {
+      return new Set<string>();
+    }
+  }
+
   apply(compiler: Compiler) {
     compiler.hooks.afterEmit.tapAsync('UnusedFilesPlugin', (compilation, callback) => {
       try {
@@ -522,22 +655,29 @@ export default class UnusedFilesPlugin {
           }
         });
 
-        // 获取所有被 webpack 使用的模块文件
-        const usedFiles = new Set<string>();
-        compilation.modules.forEach((module: any) => {
-          if (module.resource) {
-            usedFiles.add(module.resource);
-          }
-        });
+        // 获取所有被使用的模块文件
+        let usedFiles = new Set<string>();
+        if (this.options.strictRuntimeUsage) {
+          // 使用 AST 严格模式：仅值位置使用 + 副作用导入
+          usedFiles = this.runtimeReachable(entryFiles);
+        } else {
+          // 默认：依赖 webpack 模块图
+          compilation.modules.forEach((module: any) => {
+            if (module.resource) usedFiles.add(module.resource);
+          });
+        }
 
         // 找出未使用的文件
         this.unusedFiles = [];
-      this.files.forEach(file => {
+        this.files.forEach(file => {
           const isEntry = entryFiles.has(file);
           const isUsed = usedFiles.has(file);
           const isTypeReferenced = this.typeReferencedFiles.has(file);
 
-          if (!isEntry && !isUsed && !isTypeReferenced) {
+          // 当 treatTypeOnlyAsUnused=true 时，纯类型引用不再视为“已引用”
+          const isReferenced = isUsed || (!this.options.treatTypeOnlyAsUnused && isTypeReferenced);
+
+          if (!isEntry && !isReferenced) {
             this.unusedFiles.push(file);
           }
         });
@@ -556,7 +696,7 @@ export default class UnusedFilesPlugin {
       callback();
     });
 
-    compiler.hooks.done.tap('UnusedFilesPlugin', (stats) => {
+    compiler.hooks.done.tap('UnusedFilesPlugin', (_stats) => {
       if (this.unusedFiles.length === 0) {
         log.info('[unusedFiles]🎉 没有发现未使用的文件！');
         return;
