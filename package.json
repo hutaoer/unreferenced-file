@@ -1,0 +1,30 @@
+{
+  "name": "ts-demo",
+  "version": "1.0.0",
+  "description": "A TypeScript demo project",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "find:unref": "ts-node scripts/find-unreferenced.ts"
+  },
+  "keywords": [
+    "typescript",
+    "demo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.22",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "glob": "^11.0.3",
+    "minimatch": "^10.0.3",
+    "webpack": "^5.102.1"
+  }
+}
