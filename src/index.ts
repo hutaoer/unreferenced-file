@@ -2,15 +2,18 @@
 import { greet } from './utils/greeting';
 import { Calculator } from './utils/calculator';
 import { Button } from './components/Button';
-import { NewFeatureConfig } from './experimental/newFeature';
-import {type Foo, createFoo} from './utils/foo';
+// import { NewFeatureConfig } from './experimental/newFeature';
+// import {type Foo} from './utils/foo';
+import {type Foo} from './utils/foo';
 
 // 主程序入口
 function main(): void {
   console.log('🚀 TypeScript Demo Project Started!');
-  // const foo: Foo = { id: '1', name: 'foo' };
-  const foo: Foo = createFoo('1', 'foo');
-  console.log(foo);
+  const foo: Foo = { id: '1', name: 'foo' };
+  // const foo: Foo = createFoo('1', 'foo');
+  // console.log(foo);
+  // const foo2: Foo2Props = { id: '1', name: 'foo' };
+  // console.log(foo2);
   // 使用工具函数
   const message = greet('TypeScript');
   console.log(message);

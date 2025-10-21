@@ -13,8 +13,8 @@ import UnusedFilesPlugin, { UnusedFilesPluginOptions } from './find-unreferenced
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     verbose: false,
     checkTypeReferences: true,
-    treatTypeOnlyAsUnused: true,
-    strictRuntimeUsage: true,
+    // treatTypeOnlyAsUnused: true,
+    // strictRuntimeUsage: true,
     tsconfigPath: 'tsconfig.json',
     writeDisk: false,
     name: 'unused-files.json'

@@ -4,6 +4,11 @@ export type Foo = {
   name: string;
 };
 
+export interface Foo2Props {
+  id: string;
+  name: string;
+}
+
 export function createFoo(id: string, name: string): Foo {
   return { id, name };
 }
