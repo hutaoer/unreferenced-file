@@ -1,27 +1,19 @@
 {
-  "timestamp": "2025-10-21T12:14:19.719Z",
-  "totalScanned": 10,
-  "unusedCount": 5,
+  "timestamp": "2025-10-27T12:33:03.458Z",
+  "totalScanned": 5,
+  "unusedCount": 3,
   "unusedFiles": [
     {
-      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/helper.ts",
-      "relativePath": "src/utils/helper.ts"
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/types.ts",
+      "relativePath": "src/utils/types.ts"
     },
     {
-      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/fn.js",
-      "relativePath": "src/utils/fn.js"
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/foo.ts",
+      "relativePath": "src/utils/foo.ts"
     },
     {
-      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/old/legacy.ts",
-      "relativePath": "src/old/legacy.ts"
-    },
-    {
-      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/experimental/newFeature.ts",
-      "relativePath": "src/experimental/newFeature.ts"
-    },
-    {
-      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/components/Modal.ts",
-      "relativePath": "src/components/Modal.ts"
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/components/Button.ts",
+      "relativePath": "src/components/Button.ts"
     }
   ]
 }

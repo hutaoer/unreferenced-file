@@ -108,6 +108,7 @@ export default class UnusedFilesPlugin {
      tsconfigPath: 'tsconfig.json',      // 默认 TypeScript 配置文件路径
      ...options                          // 用户自定义配置覆盖默认值
    };
+   console.log('this.options', this.options);
 
    // 扫描指定目录下的所有文件
    this.files = new Set(this.scanDirectory(this.options.root || process.cwd()));

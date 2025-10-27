@@ -4,6 +4,7 @@ export type Foo = {
   name: string;
 };
 
+export type pStatus = 'pending' | 'success' | 'error';
 export interface Foo2Props {
   id: string;
   name: string;

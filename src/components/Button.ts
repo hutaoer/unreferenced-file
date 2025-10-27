@@ -1,7 +1,7 @@
 /**
  * 按钮组件
  */
-
+import './index.css';
 export interface ButtonProps {
   text: string;
   onClick: () => void;
