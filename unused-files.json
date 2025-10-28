@@ -1,8 +1,12 @@
 {
-  "timestamp": "2025-10-28T07:49:20.860Z",
-  "totalScanned": 6,
-  "unusedCount": 4,
+  "timestamp": "2025-10-28T11:12:25.633Z",
+  "totalScanned": 7,
+  "unusedCount": 6,
   "unusedFiles": [
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/address.ts",
+      "relativePath": "src/address.ts"
+    },
     {
       "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/types.ts",
       "relativePath": "src/utils/types.ts"
@@ -14,6 +18,10 @@
     {
       "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/foo.ts",
       "relativePath": "src/utils/foo.ts"
+    },
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/components/Modal.ts",
+      "relativePath": "src/components/Modal.ts"
     },
     {
       "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/components/Button.ts",

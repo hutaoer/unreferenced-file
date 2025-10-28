@@ -4,7 +4,7 @@
 // import { NewFeatureConfig } from './experimental/newFeature';
 // import {type pStatus} from './utils/foo';
 // import {Foo2Props} from './utils/foo';
-import { IAddressProps } from "./address";
+import { demoData } from "./address";
 
 // 主程序入口
 function main(): void {
@@ -27,7 +27,7 @@ function main(): void {
   //   zip: '12345',
   //   country: 'USA',
   // };
-  
+  // console.log(demoData);
   // 演示类型安全
   const numbers: number[] = [1, 2, 3, 4, 5];
   const sum = numbers.reduce((acc, num) => acc + num, 0);

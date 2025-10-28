@@ -156,7 +156,6 @@ export default class UnusedFilesPlugin {
   * 扫描 TypeScript 类型引用
   */
  scanTypeReferences = (): void => {
-  console.log('检测文件引用开始');
    try {
      const root = this.options.root || process.cwd();
      const tsconfigPath = path.resolve(root, this.options.tsconfigPath!);
@@ -206,7 +205,6 @@ export default class UnusedFilesPlugin {
        this.visitNode(sourceFile, sourceFile, typeChecker);
      });
 
-     console.log('检测文件引用结束');
 
 
    } catch (error) {
@@ -226,6 +224,7 @@ export default class UnusedFilesPlugin {
      if (ts.isStringLiteral(moduleSpecifier)) {
        const importPath = moduleSpecifier.text;
 
+       // 检查是否是显式的类型导入
        const isTypeOnlyImport = node.importClause?.isTypeOnly;
        const hasTypeOnlySpecifiers = node.importClause?.namedBindings && 
          ts.isNamedImports(node.importClause.namedBindings) &&
@@ -238,7 +237,6 @@ export default class UnusedFilesPlugin {
            this.typeReferencedFiles.add(resolvedPath);
          }
        } else {
-          console.log('检查普通导入中是否包含类型', importPath);
          // 检查普通导入中是否包含类型
          this.checkImportForTypes(node, importPath, sourceFile, typeChecker);
        }
@@ -249,7 +247,6 @@ export default class UnusedFilesPlugin {
    if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
      if (ts.isStringLiteral(node.moduleSpecifier)) {
        const importPath = node.moduleSpecifier.text;
-       
        
        // 检查是否是类型导出
        const isTypeOnlyExport = node.isTypeOnly;
@@ -339,7 +336,6 @@ export default class UnusedFilesPlugin {
 
    let hasTypeExports = false;
 
-   console.log('exportNode.exportClause.elements', exportNode.exportClause.elements);
    // 检查命名导出
    for (const element of exportNode.exportClause.elements) {
      const symbol = typeChecker.getSymbolAtLocation(element.name);
@@ -394,23 +390,15 @@ export default class UnusedFilesPlugin {
   * 判断符号是否为类型
   */
  private isTypeSymbol = (symbol: ts.Symbol, typeChecker: ts.TypeChecker): boolean => {
-  console.log('symbol flags:', symbol.flags);
    // 检查符号标志
    const flags = symbol.flags;
+   
+   // 类型相关的标志
    if (flags & ts.SymbolFlags.Type ||
        flags & ts.SymbolFlags.TypeAlias ||
        flags & ts.SymbolFlags.Interface ||
        flags & ts.SymbolFlags.TypeParameter) {
      return true;
-   }
-
-   // 🔧 新增：检查别名符号
-   if (flags & ts.SymbolFlags.Alias) {
-     const aliasedSymbol = typeChecker.getAliasedSymbol(symbol);
-     if (aliasedSymbol) {
-       // 递归检查原始符号是否为类型
-       return this.isTypeSymbol(aliasedSymbol, typeChecker);
-     }
    }
 
    // 检查是否是枚举类型（枚举既可以作为类型也可以作为值）
@@ -421,6 +409,14 @@ export default class UnusedFilesPlugin {
    // 检查是否是类（类既可以作为类型也可以作为值）
    if (flags & ts.SymbolFlags.Class) {
      return true;
+   }
+
+   // 检查别名符号
+   if (flags & ts.SymbolFlags.Alias) {
+     const aliasedSymbol = typeChecker.getAliasedSymbol(symbol);
+     if (aliasedSymbol) {
+       return this.isTypeSymbol(aliasedSymbol, typeChecker);
+     }
    }
 
    return false;
@@ -544,10 +540,13 @@ export default class UnusedFilesPlugin {
            usedFiles.add(module.resource);
          }
        });
+       console.log('all files', this.files);
+       console.log('all entryFiles', entryFiles);
+       console.log('all usedFiles', usedFiles);
 
+       console.log('all this.typeReferencedFiles', this.typeReferencedFiles);
        // 找出未使用的文件
        this.unusedFiles = [];
-       
      this.files.forEach(file => {
          const isEntry = entryFiles.has(file);
          const isUsed = usedFiles.has(file);
