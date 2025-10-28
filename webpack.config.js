@@ -24,7 +24,7 @@ module.exports = {
       exclude: [],
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       verbose: true,
-      checkTypeReferences: false,
+      checkTypeReferences: true,
       treatTypeOnlyAsUnused: true,
       strictRuntimeUsage: true,
       tsconfigPath: 'tsconfig.json',

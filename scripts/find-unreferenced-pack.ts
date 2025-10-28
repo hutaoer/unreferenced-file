@@ -394,6 +394,7 @@ export default class UnusedFilesPlugin {
   * 判断符号是否为类型
   */
  private isTypeSymbol = (symbol: ts.Symbol, typeChecker: ts.TypeChecker): boolean => {
+  console.log('symbol flags:', symbol.flags);
    // 检查符号标志
    const flags = symbol.flags;
    if (flags & ts.SymbolFlags.Type ||
@@ -404,13 +405,13 @@ export default class UnusedFilesPlugin {
    }
 
    // 🔧 新增：检查别名符号
-  if (flags & ts.SymbolFlags.Alias) {
-    const aliasedSymbol = typeChecker.getAliasedSymbol(symbol);
-    if (aliasedSymbol) {
-      // 递归检查原始符号是否为类型
-      return this.isTypeSymbol(aliasedSymbol, typeChecker);
-    }
-  }
+   if (flags & ts.SymbolFlags.Alias) {
+     const aliasedSymbol = typeChecker.getAliasedSymbol(symbol);
+     if (aliasedSymbol) {
+       // 递归检查原始符号是否为类型
+       return this.isTypeSymbol(aliasedSymbol, typeChecker);
+     }
+   }
 
    // 检查是否是枚举类型（枚举既可以作为类型也可以作为值）
    if (flags & ts.SymbolFlags.Enum) {

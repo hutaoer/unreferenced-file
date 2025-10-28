@@ -1,11 +1,15 @@
 {
-  "timestamp": "2025-10-27T12:33:03.458Z",
-  "totalScanned": 5,
-  "unusedCount": 3,
+  "timestamp": "2025-10-28T07:49:20.860Z",
+  "totalScanned": 6,
+  "unusedCount": 4,
   "unusedFiles": [
     {
       "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/types.ts",
       "relativePath": "src/utils/types.ts"
+    },
+    {
+      "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/greeting.ts",
+      "relativePath": "src/utils/greeting.ts"
     },
     {
       "absolutePath": "/Users/heizi/Sites/test-projects/ts-demo/src/utils/foo.ts",

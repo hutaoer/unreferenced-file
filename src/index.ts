@@ -1,9 +1,10 @@
 
-import { greet } from './utils/greeting';
-import { Button } from './components/Button';
+// import { greet } from './utils/greeting';
+// import { Button } from './components/Button';
 // import { NewFeatureConfig } from './experimental/newFeature';
-import {type pStatus} from './utils/foo';
-// import {pStatus, Foo, Foo2Props} from './utils/foo';
+// import {type pStatus} from './utils/foo';
+// import {Foo2Props} from './utils/foo';
+import { IAddressProps } from "./address";
 
 // 主程序入口
 function main(): void {
@@ -14,9 +15,18 @@ function main(): void {
   // console.log(foo);
   // const foo2: Foo2Props = { id: '1', name: 'foo' };
   // console.log(foo2);
+  // console.log(demoData);
+  // console.log(num1);
   // 使用工具函数
-  const message = greet('TypeScript');
-  console.log(message);
+  // const message = greet('TypeScript');
+  // console.log(message);
+  // const address: IAddressProps = {
+  //   address: '123 Main St',
+  //   city: 'Anytown',
+  //   state: 'CA',
+  //   zip: '12345',
+  //   country: 'USA',
+  // };
   
   // 演示类型安全
   const numbers: number[] = [1, 2, 3, 4, 5];
